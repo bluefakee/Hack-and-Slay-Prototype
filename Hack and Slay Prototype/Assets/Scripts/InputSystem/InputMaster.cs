@@ -33,6 +33,22 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Jump"",
+                    ""type"": ""Button"",
+                    ""id"": ""40d3894d-d1ca-44c8-af88-ae5a18108799"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
+                    ""name"": ""Crouch"",
+                    ""type"": ""Button"",
+                    ""id"": ""dc832db9-d0aa-449b-8b8a-0775f99fcad1"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -79,6 +95,28 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""action"": ""Movement"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""66e1029b-c3aa-4817-9017-c01974f8e808"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Mouse and Keyboard"",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""41fd57c9-152f-4242-93e4-41cfbe54c3fc"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Mouse and Keyboard"",
+                    ""action"": ""Crouch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -106,6 +144,8 @@ public class @InputMaster : IInputActionCollection, IDisposable
         m_Ingame = asset.FindActionMap("Ingame", throwIfNotFound: true);
         m_Ingame_Movement = m_Ingame.FindAction("Movement", throwIfNotFound: true);
         m_Ingame_Attack = m_Ingame.FindAction("Attack", throwIfNotFound: true);
+        m_Ingame_Jump = m_Ingame.FindAction("Jump", throwIfNotFound: true);
+        m_Ingame_Crouch = m_Ingame.FindAction("Crouch", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -157,12 +197,16 @@ public class @InputMaster : IInputActionCollection, IDisposable
     private IIngameActions m_IngameActionsCallbackInterface;
     private readonly InputAction m_Ingame_Movement;
     private readonly InputAction m_Ingame_Attack;
+    private readonly InputAction m_Ingame_Jump;
+    private readonly InputAction m_Ingame_Crouch;
     public struct IngameActions
     {
         private @InputMaster m_Wrapper;
         public IngameActions(@InputMaster wrapper) { m_Wrapper = wrapper; }
         public InputAction @Movement => m_Wrapper.m_Ingame_Movement;
         public InputAction @Attack => m_Wrapper.m_Ingame_Attack;
+        public InputAction @Jump => m_Wrapper.m_Ingame_Jump;
+        public InputAction @Crouch => m_Wrapper.m_Ingame_Crouch;
         public InputActionMap Get() { return m_Wrapper.m_Ingame; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -178,6 +222,12 @@ public class @InputMaster : IInputActionCollection, IDisposable
                 @Attack.started -= m_Wrapper.m_IngameActionsCallbackInterface.OnAttack;
                 @Attack.performed -= m_Wrapper.m_IngameActionsCallbackInterface.OnAttack;
                 @Attack.canceled -= m_Wrapper.m_IngameActionsCallbackInterface.OnAttack;
+                @Jump.started -= m_Wrapper.m_IngameActionsCallbackInterface.OnJump;
+                @Jump.performed -= m_Wrapper.m_IngameActionsCallbackInterface.OnJump;
+                @Jump.canceled -= m_Wrapper.m_IngameActionsCallbackInterface.OnJump;
+                @Crouch.started -= m_Wrapper.m_IngameActionsCallbackInterface.OnCrouch;
+                @Crouch.performed -= m_Wrapper.m_IngameActionsCallbackInterface.OnCrouch;
+                @Crouch.canceled -= m_Wrapper.m_IngameActionsCallbackInterface.OnCrouch;
             }
             m_Wrapper.m_IngameActionsCallbackInterface = instance;
             if (instance != null)
@@ -188,6 +238,12 @@ public class @InputMaster : IInputActionCollection, IDisposable
                 @Attack.started += instance.OnAttack;
                 @Attack.performed += instance.OnAttack;
                 @Attack.canceled += instance.OnAttack;
+                @Jump.started += instance.OnJump;
+                @Jump.performed += instance.OnJump;
+                @Jump.canceled += instance.OnJump;
+                @Crouch.started += instance.OnCrouch;
+                @Crouch.performed += instance.OnCrouch;
+                @Crouch.canceled += instance.OnCrouch;
             }
         }
     }
@@ -205,5 +261,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
     {
         void OnMovement(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
+        void OnJump(InputAction.CallbackContext context);
+        void OnCrouch(InputAction.CallbackContext context);
     }
 }

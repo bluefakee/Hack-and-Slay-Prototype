@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 
+[RequireComponent(typeof(PlayerMovement))]
 public class PlayerInputManager : MonoBehaviour
 {
-    [Header("Referenzes"), SerializeField, Tooltip("Put the movement Component here")]
-    private Movement moveComp;
+    private PlayerMovement moveComp;
 
     private InputMaster master;
 
@@ -12,9 +12,20 @@ public class PlayerInputManager : MonoBehaviour
         // Initialize the master
         master = new InputMaster();
 
-        // Subscribe Movement to the master
-        master.Ingame.Movement.performed += _ => moveComp.SetMove(_.ReadValue<float>());
-        master.Ingame.Movement.canceled += _ => moveComp.SetMove(0);            // Reset the move if no movement button is pressed
+        // Get the moveComp
+        moveComp = GetComponent<PlayerMovement>();
+
+        // Subscribe to Movement events
+        master.Ingame.Movement.started += _ => moveComp.SetMove(_.ReadValue<float>());
+        master.Ingame.Movement.canceled += _ => moveComp.SetMove(0);
+
+        // Subscribe to Jump events
+        master.Ingame.Jump.started += _ => moveComp.Jump();
+        master.Ingame.Jump.canceled += _ => moveComp.CancelJump();
+
+        // Subscribe to Crouch events
+        master.Ingame.Crouch.started += _ => moveComp.ToggleCrouch();
+        master.Ingame.Crouch.canceled += _ => moveComp.ToggleCrouch();
     }
 
     // Prevent that master events call methods and cause weird behaviour or exceptions
