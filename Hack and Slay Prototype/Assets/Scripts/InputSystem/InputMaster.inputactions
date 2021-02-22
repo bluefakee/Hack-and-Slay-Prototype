@@ -14,17 +14,17 @@
                     "interactions": ""
                 },
                 {
-                    "name": "Attack",
+                    "name": "Jump",
                     "type": "Button",
-                    "id": "e74130ac-36de-4138-b5e6-0047c47a6ed8",
+                    "id": "40d3894d-d1ca-44c8-af88-ae5a18108799",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "Jump",
+                    "name": "Dash",
                     "type": "Button",
-                    "id": "40d3894d-d1ca-44c8-af88-ae5a18108799",
+                    "id": "3b38753a-8458-4f10-a81f-f87b4ee1b0c3",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
@@ -36,20 +36,41 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "Attack",
+                    "type": "Button",
+                    "id": "e74130ac-36de-4138-b5e6-0047c47a6ed8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Shoot",
+                    "type": "Button",
+                    "id": "2673efbc-a22a-4d88-a168-b1ecc82fccbf",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Throw",
+                    "type": "Button",
+                    "id": "19ac79e0-8810-415d-abcd-a5d38a1bd624",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Drop",
+                    "type": "Button",
+                    "id": "6f050fab-aa19-458d-a32c-bdc405d3990c",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
-                {
-                    "name": "",
-                    "id": "8462f7e6-7eba-40b6-9252-8d8b574fb35c",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Mouse and Keyboard",
-                    "action": "Attack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
                 {
                     "name": "AD-Controll",
                     "id": "4250ad22-1118-48c7-9f31-c94718114a9b",
@@ -102,6 +123,61 @@
                     "processors": "",
                     "groups": "Mouse and Keyboard",
                     "action": "Crouch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8462f7e6-7eba-40b6-9252-8d8b574fb35c",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse and Keyboard",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e3ae1a8d-7f85-41b2-a811-05e9738c851a",
+                    "path": "<Keyboard>/shift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse and Keyboard",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "db748cfe-b3ba-4922-80f5-ca819aa678f7",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse and Keyboard",
+                    "action": "Shoot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bad12a1e-2c21-4eb9-819d-1594c5e49568",
+                    "path": "<Mouse>/middleButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse and Keyboard",
+                    "action": "Throw",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "44d42d05-be74-4945-8ffa-11976b03c120",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse and Keyboard",
+                    "action": "Drop",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

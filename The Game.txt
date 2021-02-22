@@ -1,0 +1,11 @@
+The three pillars: fast paced, time manipulation, oneshot
+
+Gameplay Features:	- Dashes (3 in a row), can be combined with slices to deal damage while dashing (interrupts dash chains)
+			- Slowmo
+			- Killed enemys drop their weapons that can be picked up by the player and used against them (very limited use)
+			- Many moves can be combined to achieve cool stuff (dash on the floor + slide for very fast sliding or dash up to a wall to slide up fast)
+			- Reflect bullets
+
+Lore:
+
+Design and Artstyle:	- Pixel art, futuristic, low pixel res (32x32 or even 16x16 for player)

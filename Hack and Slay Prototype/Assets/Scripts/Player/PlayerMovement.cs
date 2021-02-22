@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;       // IEnumerator interface
+using UnityEngine;
 
 // PlayerMovement writen by bluefake
 // In Update all regions have a explanation of what the code there does
@@ -6,13 +7,19 @@
 
 // Work In Progress:
 // Eventsystem for Animations
-// After falling of a cliff, you can still jump (like in Celeste)
+// Crouch does not change the position of the checks
 
 [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
 public class PlayerMovement : MonoBehaviour
 {
     private Rigidbody2D rb;
     private BoxCollider2D coll;
+
+    #region Events
+
+    // Insert funny code here
+
+    #endregion
 
     #region Groundcheck Fields
 
@@ -22,19 +29,22 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private Transform head, left, right;
 
-    [SerializeField]
+    [SerializeField, Tooltip("Its recommended to make the as wide as possible to make the checks more responsible. But using the max Length can result in weird behaviour because the player is for example grounded at a wall")]
     private Vector2 feetSize, headSize, leftSize, rightSize;
 
     [SerializeField]
     private LayerMask whatIsGround;
 
-    [SerializeField, Tooltip("Shows the hitboxes of the checks")]
-    private bool debugChecks;
+    public bool isGrounded { get; private set; }            // Is the player on Ground?
+    public bool isCeilingAbove { get; private set; }        // Is the player hitting a Ceiling?
+    public bool isWallLeft { get; private set; }            // Is the player touching a wall left
+    public bool isWallRight { get; private set; }           // Is the player touching a wall right?
+    private bool groundCallChecker;                         // This is a field needed for the OnStartGround and OnEndGround methods
 
-    private bool isGrounded;            // Is the player on Ground?
-    protected bool isCeilingAbove;      // Is the player hitting a Ceiling?
-    protected bool isWallLeft;          // Is the player touching a wall left
-    protected bool isWallRight;         // Is the player touching a wall right?
+    /// <summary>
+    /// Returns true if any check is true
+    /// </summary>
+    public bool isTouchingGround => isGrounded || isCeilingAbove || isWallLeft || isWallRight;
 
     #endregion
 
@@ -60,12 +70,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField, Range(0f, 1f), Tooltip("The durration the vertical velocity of the jump is applied")]
     private float jumpDurr;
 
+    [SerializeField, Range(0f, -20f), Tooltip("How fast can the player fall")]
+    private float maxDrag;
+
     [SerializeField, Range(0f, 1f), Tooltip("A multiplyer that gets applied to the acc and decc when the player is not grounded")]
     private float midAirSlow = 0.5f;
 
-    private float jumpTimer;        // Counts the time down while the object jumps (both walljump and normal)
+    private float jumpTimer;            // Counts the time down while the object jumps (both walljump and normal)
 
-    private bool isJumping;         // has the Player started Jump()?
+    private bool isJumping;             // has the Player started Jump()?
 
     #endregion
 
@@ -75,23 +88,26 @@ public class PlayerMovement : MonoBehaviour
     private float unAttachDurr;
 
     [SerializeField, Range(0f, 1f), Tooltip("With what gets the grav of the player multiplyed when wallSliding")]
-    private float gravMulti = 0.5f;
+    private float slideGravMulti = 0.5f;
+
+    [SerializeField, Range(0f, -20f), Tooltip("How high can be the negative velocity.y when sliding")]
+    private float maxSlideDrag;
+
+    [SerializeField, Range(0f, 100f), Tooltip("How fast is the fallspeed reduced per second if it the player falls faster when the maxSpeed")]
+    private float fallRecover;
 
     private float unAttachTimer;    // Countdown until the sliding gets canceled
-    private int direction;        // Saves where the player is jumping to
+    private int direction;          // Saves where the player is jumping to
 
-    private bool isSliding;         // if true, the player grabbed the next wall and needs to hold the other direction for a certain time
-                                    // its recommendet to use SetSliding when changing this value
+    private bool isSliding;         // Its recommended to use SetSlide since it also changes the gravity
 
-    // Sets the Sliding and automaticly sets the gravity
-    private void SetSliding(bool isSliding) 
+    private void SetSlide(bool value)
     {
-        if (this.isSliding == isSliding)
-            return;
-    
-        this.isSliding = isSliding;
+        if (isSliding == value) return;
 
-        rb.gravityScale *= isSliding ? gravMulti : (1 / gravMulti);
+        isSliding = value;
+
+        if (!isCrouching) rb.gravityScale *= isSliding ? slideGravMulti : (1 / slideGravMulti);
     }
 
     #endregion
@@ -108,45 +124,71 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
-    #region Crouching Fields
+    #region Crouch Fields
 
-    [Header("Crouching"), SerializeField, Range(0f, 1f), Tooltip("How much gets the player slowed when crouching")]
-    private float crouchSlow;
+    [Header("Crouch"), SerializeField, Range(0f, 1f), Tooltip("with what gets the collider size multiplyed with when crouching")]
+    private float ySizeMulti;
 
-    [SerializeField, Range(0f, 1f), Tooltip("With what gets the size multiplyed when enableing crouching")]
-    private float crouchSizeMulti;
+    [SerializeField, Range(0f, 1f), Tooltip("With what gets the grav multiplyed when crouching on floor to better slide")]
+    private float crouchGravMulti;
 
-    [SerializeField, Range(0f, 10f), Tooltip("How much gets the drag increased when crouching midair (also on walls)")]
-    private float crouchDrag;
+    private bool isCrouching;       // Its recommended to use this similar to isSliding
 
-    private bool isCrouching;       // Its recommended to use it similar to isSliding
-
-    private void SetCrouching(bool isCrouching)
+    private void SetCrouch(bool value)
     {
-        if (isCrouching == this.isCrouching)
-            return;
+        if (value == isCrouching) return;
 
-        this.isCrouching = isCrouching;
+        isCrouching = value;
 
-        // Save the new ySize of the collider
-        float ySize = coll.size.y * (isCrouching ? crouchSizeMulti : 1 / crouchSizeMulti);
+        // Allow only to change the value when dashing
+        if (isDashing) return;
 
-        // Apply all changes to the collider
-        coll.offset -= new Vector2(0, coll.size.y - ySize) * 0.5f;
-        coll.size = new Vector2(coll.size.x, ySize);
+        // Assigns new Collider size
+        coll.size = new Vector2(coll.size.x, coll.size.y * (isCrouching ? ySizeMulti : 1 / ySizeMulti));
+        coll.offset += new Vector2(0, isCrouching ? -coll.size.y * 0.5f : coll.size.y * 0.5f * ySizeMulti);
 
-        // Increase grav scale
-        rb.gravityScale *= isCrouching ? crouchDrag : 1 / crouchDrag;
+        // This recalculates the timer to fit the rb.velocity after crouching
+        if (!isCrouching) timer = VelocityToTimer(rb.velocity.x);
 
-        // Reduce the move to simulate sliding
-        move *= isCrouching ? crouchSlow : 1 / crouchSlow;
+        // Toggle gravity when sliding
+        if (isSliding) rb.gravityScale *= isCrouching ? (1 / slideGravMulti) : slideGravMulti;
+
+        if (isGrounded) rb.gravityScale *= isCrouching ? crouchGravMulti : (1 / crouchGravMulti);
     }
 
     #endregion
 
-    void OnDrawGizmos()
+    #region Dash Fields
+
+    [Header("Dash"), SerializeField, Range(0f, 10f), Tooltip("How far can the player dash")]
+    private float dashRange;
+
+    [SerializeField, Range(0f, 1f), Tooltip("For how long can the player dash")]
+    private float dashDurr;
+
+    [SerializeField, Tooltip("The boost the player gets normally after a dash")]
+    private Vector2 dashBoost;
+
+    [SerializeField, Range(0f, 1f), Tooltip("With what gets the velocity multiplyed if the momentum of the dash is kept")]
+    private float dashMomentum;
+
+    private bool isDashing;
+
+    private float defaultGrav;
+
+    #endregion
+
+    #region Debugging
+
+    [Header("Debugging"), SerializeField, Tooltip("Shows the hitboxes of the checks in the Scene")]
+    private bool debugChecks;
+
+    [Tooltip("If enabled, a GUI will be generated on the top left that contains stats like the timer, if the player isGrounded etc")]
+    public bool debugStats;
+
+    private void OnDrawGizmos()
     {
-        if(debugChecks)
+        if (debugChecks)
         {
             Gizmos.DrawCube(feet.position, new Vector3(feetSize.x, feetSize.y, 0.1f));
             Gizmos.DrawCube(head.position, new Vector3(headSize.x, headSize.y, 0.1f));
@@ -155,7 +197,31 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void Update()
+    private void OnGUI()
+    {
+        if (debugStats)
+        {
+            int y = 0;
+
+            GUI.Box(new Rect(0, y, 200, 25), "Velocity = " + rb.velocity.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "Gravity Scale = " + rb.gravityScale.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "Input Move = " + move.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "Internal Move = " + timer.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "isGrounded = " + isGrounded.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "isCeilingAbove = " + isCeilingAbove.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "isWallLeft = " + isWallLeft.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "isWallRight = " + isWallRight.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "isSliding = " + isSliding.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "isJumping = " + isJumping.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "isWallJumping = " + isWallJumping.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "isCrouching = " + isCrouching.ToString()); y += 25;
+            GUI.Box(new Rect(0, y, 200, 25), "isDashing = " + isDashing.ToString()); y += 25;
+        }
+    }
+
+    #endregion
+
+    private void Update()
     {
         #region Groundcheck
 
@@ -165,29 +231,36 @@ public class PlayerMovement : MonoBehaviour
         isWallLeft = Physics2D.OverlapBox(left.position, leftSize, 0, whatIsGround);
         isWallRight = Physics2D.OverlapBox(right.position, rightSize, 0, whatIsGround);
 
+        if (isGrounded && !groundCallChecker)
+        {
+            // Gets called once when becoming grounded
+            groundCallChecker = true;
+
+            // Lower grav when crouching
+            if (isCrouching) rb.gravityScale *= crouchGravMulti;
+        }
+
+        if (!isGrounded && groundCallChecker)
+        {
+            // Gets called once when becoming ungrounded
+            groundCallChecker = false;
+        }
+
         #endregion
 
-        #region Movement Calculation
+        #region Timer Calculation
 
-        // The movement works like this:
-        // The move represents the input of the player through SetMove()
-        // The timer is a counter that counts from -1 to 1 and gets multiplyed with the moveSpeed in FixedUpdate
-        // The timer slowly counts up or down depending of the move using accTime
-        // If move is 0 or the timer is higher when the move, the timer slowly decreases using deccTime
-        // If the player is not grounded, the acc and deccTime get longer depending on the midAirSlow (0.5 midAirSlow means double acc/deccTime)
-        // Below the system prevents that the player can be stuck in walls when moving towards it
-
-        if(move > 0 && timer <= move)
+        if (move > 0 && timer <= move && (!isCrouching || !isGrounded))
         {
             // the timer is not bigger as move and the player inputs right, timer increases intil it reaches move
-            timer = Mathf.Clamp(timer + Time.deltaTime * (isGrounded ? 1 : midAirSlow) / accTime , -1, move);
+            timer = Mathf.Clamp(timer + Time.deltaTime * (isGrounded ? 1 : midAirSlow) / accTime, -1, move);
         }
-        else if (move < 0 && timer >= move)
+        else if (move < 0 && timer >= move && (!isCrouching || !isGrounded))
         {
             // same like above, only for left and decreasing
             timer = Mathf.Clamp(timer - Time.deltaTime * (isGrounded ? 1 : midAirSlow) / accTime, move, 1);
         }
-        else
+        else if (isGrounded)
         {
             // no input or the timer results in faster movement when the inputs allow -> the timer nears to 0
             timer = timer > 0 ? Mathf.Clamp(timer - Time.deltaTime * (isGrounded ? 1 : midAirSlow) / deccTime, 0, 1) :
@@ -195,34 +268,23 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Prevent that the player gets stuck on walls
-        if (timer > 0 && isWallRight) timer = 0;
-
-        if (timer < 0 && isWallLeft) timer = 0;
+        if (isMovingToWall(timer)) timer = 0;
 
         #endregion
 
         #region Jump Management
 
-        // The jumping works like this:
-        // isJumping and isWallJumping can both be set true by Jump() (of course if the player isGrounded or Sliding)
-        // when is(Wall)Jumping gets set true, jumpTimer gets set to the (wall)JumpDurr and gets counted down
-        // if it reaches zero, the is(Wall)Jumping gets set false (when wallJumping the timer gets set to the jumpdirection to keep the momentum)
-        // Both gets canceled if a Ceiling is touched
-        // When isJumping is true, the vertical velocity gets set to jumpForce
-        // When isWallJumping is true, the vertical velocity gets set to wallJumpForce and the directon of the jump is saved and used instead the timer
-        // (Im probably adding the ability to still be grounded if you run of a plattform like in celeste)
-
-        if ((isJumping || isWallJumping) && jumpTimer > 0 && !isCeilingAbove)
+        if ((isJumping || isWallJumping) && jumpTimer > 0 && !isCeilingAbove && !isDashing)
         {
             // Count down the time the player is jumping up
             jumpTimer -= Time.deltaTime;
         }
-        else if (isJumping)
+        else if (isJumping && !isDashing)
         {
             // Cancel jump
             isJumping = false;
         }
-        else if(isWallJumping)
+        else if (isWallJumping && !isDashing)
         {
             // Cancel wallJump
             isWallJumping = false;
@@ -230,22 +292,16 @@ public class PlayerMovement : MonoBehaviour
         }
 
         #endregion
-    
+
         #region WallSliding
 
-        // The Sliding works like this:
-        // If you are not grounded and moving towards a wall, isSliding becomes true
-        // It also becomes true if you wallJump at a wall what allows the player to spam Jump() when between 2 walls
-        // Also the gravityScale of the rb gets multiplyed by gravMulti to simulate wallSliding and gets reverted when stopping to slide (see SetSliding())
-        // If move goes away from the wall, the countdown unAttachTimer counts down
-        // It gets reset to usAttachDurr when the move becomes 0 or moves towards a wall
-        // After the countdown reaches zero, the player stops sliding on the wall and falls
-        // This is done because it can feel bad if you instantly stop sliding when pressing away from the wall and can deny the player
-
-        if (!isGrounded && !isSliding && (isMovingToWall(move) || (isMovingToWall(direction) && isWallJumping)))
+        if (!isGrounded && !isSliding && !isDashing && ((isMovingToWall(move) && !isWallJumping) || (isMovingToWall(direction) && isWallJumping)))
         {
             // The player is moving against a wall while not grounded or wallJumps at a wall and starts sliding
-            SetSliding(true);
+            SetSlide(true);
+
+            // Prevents weird hehaviour
+            if (isWallJumping) isWallJumping = false;
         }
 
         // This is to simulate that the player needs to hold a short amount
@@ -261,30 +317,111 @@ public class PlayerMovement : MonoBehaviour
             unAttachTimer = unAttachDurr;
         }
 
-        if ((isGrounded || unAttachTimer <= 0) && isSliding)
+        if ((isGrounded || unAttachTimer <= 0 || !isWallRight && !isWallLeft) && isSliding)
         {
             // Reset the slide
-            SetSliding(false);
+            SetSlide(false);
         }
 
         #endregion
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-        // Change the velocity. The Sin results in a smooth curve (for both positive and negative for the x-Axis)
-        // https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/ is a good article that has such formulas that you can use for smoother curves
-        // If the player is jumping, the y velocity is set to jumpForce, else the velocity stays as it is
-        // The Sin isnt used for jumping because this results in a weird feeling when jumping somehow
-        rb.velocity = isWallJumping ? new Vector2(direction * moveSpeed, wallJumpForce) : 
-            new Vector2(Mathf.Sin(timer * 0.5f * Mathf.PI) * moveSpeed, isJumping ? jumpForce : rb.velocity.y);
+        if (isDashing) return;
+
+        // Get the velocity
+        Vector2 velocity = rb.velocity;
+
+        if (velocity.y < (isSliding && !isCrouching ? maxSlideDrag : maxDrag))
+        {
+            // Limit the fallspeed
+            velocity.y += fallRecover * Time.fixedDeltaTime;
+        }
+
+        if ((!isCrouching || isJumping) && !isWallJumping)
+        {
+            velocity.x =  rb.velocity.x < moveSpeed && rb.velocity.x > -moveSpeed ? TimerToVelocity(timer) : velocity.x - velocity.x * deccTime * Time.fixedDeltaTime;
+        }
+
+        if (isJumping)
+        {
+            // Apply jumpForce to velocity.y to simulate jumping
+            velocity.y = jumpForce;
+        }
+
+        if (isWallJumping)
+        {
+            // Apply wallJumpForce to velocity.y
+            velocity = new Vector2(direction * moveSpeed, wallJumpForce > rb.velocity.y ? wallJumpForce : rb.velocity.y);
+        }
+
+        rb.velocity = velocity;
     }
 
-    void Awake()
+    IEnumerator _Dash(Vector2 direction)
+    {
+        // Reset slide since it will else not cancel properly
+        SetSlide(false);
+
+        // Save the current state of isCrouching
+        bool crouch = isCrouching;
+
+        // Start the dashloop
+        isDashing = true;
+        rb.gravityScale = 0;
+        for (float timePassed = dashDurr; timePassed > 0; timePassed -= Time.fixedDeltaTime)
+        {
+            rb.velocity = new Vector2(isWallLeft && direction.x < 0 || isWallRight && direction.x > 0 ? 0 : direction.x,
+                isGrounded && direction.y < 0 || isCeilingAbove && direction.y > 0 ? 0 : direction.y) * dashRange / dashDurr;
+
+            yield return new WaitForFixedUpdate();
+        }
+        isDashing = false;
+
+        // Reset gravity
+        rb.gravityScale = defaultGrav;
+
+        // Set Sliding if dashed to a wall
+        if (isWallLeft || isWallRight)
+        {
+            SetSlide(true);
+        }
+
+        // Change gravity depending on crouch
+        rb.gravityScale *= isCrouching && !isSliding ? crouchGravMulti : 1;
+
+        // Change the hitbox size depending on crouch
+        if (crouch != isCrouching)
+        {
+            coll.size = new Vector2(coll.size.x, coll.size.y * (isCrouching ? ySizeMulti : 1 / ySizeMulti));
+            coll.offset += new Vector2(0, isCrouching ? -coll.size.y * 0.5f : coll.size.y * 0.5f * ySizeMulti);
+        }
+
+        // Sets new velocity
+        if (!(isGrounded || isSliding)) rb.velocity = rb.velocity.normalized * dashBoost;
+        else rb.velocity *= dashMomentum;
+
+        // Jump got called while dashing -> the jump gets executed afterward
+        if (isJumping)
+        {
+            isJumping = false;
+            Jump();
+        }
+
+        // Set timer
+        timer = VelocityToTimer(rb.velocity.x);
+        yield break;
+    }
+
+    private void Awake()
     {
         // Get referenzes
         rb = GetComponent<Rigidbody2D>();
         coll = GetComponent<BoxCollider2D>();
+
+        // Assign default grav
+        defaultGrav = rb.gravityScale;
 
         // Prevent divisions with 0
         if (accTime == 0) accTime = 0.001f;
@@ -293,6 +430,10 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isMovingToWall(float direction) => isWallLeft && direction < 0 || isWallRight && direction > 0;
 
+    private float VelocityToTimer(float velocity) => Mathf.Asin(Mathf.Clamp(velocity / moveSpeed, -1, 1)) * 2 / Mathf.PI;
+
+    private float TimerToVelocity(float timer) => Mathf.Sin(timer * 0.5f * Mathf.PI) * moveSpeed;
+
     #region Outside Controll
 
     /// <summary>
@@ -300,27 +441,35 @@ public class PlayerMovement : MonoBehaviour
     /// <para>Saves the value that was set and therefore can be called using GetKeyDown and GetKeyUp to save performance. Also GetAxis can be used directly in the brackets</para>
     /// </summary>
     /// <param name="move">The move direction. If its lower when 1/-1, the player moves at lower speed</param>
-    public void SetMove(float move) => this.move = Mathf.Clamp(move, -1, 1) * (isCrouching ? crouchSlow : 1);
+    public void SetMove(float move) => this.move = Mathf.Clamp(Mathf.Asin(move) * 2 / Mathf.PI, -1, 1);   // The formula used there is the reversed used in FixedUpdate to make the move the actuall movementspeed
 
     /// <summary>
     /// Lets the player start (wall)Jumping
     /// </summary>
-    public void Jump() 
-    { 
-        if (!(isGrounded || isSliding)) return;
+    public void Jump()
+    {
+        if (!(isGrounded || isSliding || isDashing)) return;
 
         // Depending on if the player is on a wall or floor, start (wall-)jumping
-        if (isGrounded) 
+        if (isGrounded)
         {
+            // This prevents that the low grav from crouching stays
+            if (isCrouching) rb.gravityScale *= 1 / crouchGravMulti;
+
             isJumping = true;
             jumpTimer = jumpDurr;   // Start the Countdown
         }
-        else 
+        else if (isSliding)
         {
             isWallJumping = true;
-            SetSliding(false);                  // Disables the sliding
+            SetSlide(false);                    // Disables the sliding
             jumpTimer = wallJumpDurr;           // Start the Countdown
             direction = isWallRight ? -1 : 1;   // In which direction the player jumps
+        }
+        else
+        {
+            // Jump got called while dashing and this method gets called again after dashing or even canceles the dash if the player risks to not slide/be grounded anymore
+            isJumping = true;
         }
 
     }
@@ -329,9 +478,9 @@ public class PlayerMovement : MonoBehaviour
     /// The jump lasts for a certain amount of seconds, this method cancles the jump early
     /// <para>Note that this method does not cancel wallJumping</para>
     /// </summary>
-    public void CancelJump() 
+    public void CancelJump()
     {
-        if(!isJumping) return;
+        if (!isJumping) return;
 
         isJumping = false;
     }
@@ -340,7 +489,13 @@ public class PlayerMovement : MonoBehaviour
     /// Toggles the Crouching on or off.
     /// <para>Its recommented to use it with GetKeyDown and GetKeyUp or something similar</para>
     /// </summary>
-    public void ToggleCrouch() => SetCrouching(!isCrouching);
+    public void Crouch(bool crouch) => SetCrouch(crouch);
+
+    /// <summary>
+    /// Lets the player dash in direction. The direction is internally normalized
+    /// </summary>
+    /// <param name="direction">The dash direction</param>
+    public void Dash(Vector2 direction) => StartCoroutine(_Dash(direction.normalized));
 
     #endregion
 }
