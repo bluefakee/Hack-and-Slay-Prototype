@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;          // Getting the mousePosition for dashing
 
-[RequireComponent(typeof(PlayerMovement), typeof(PlayerSlowmoManager), typeof(PlayerAttack))]
+[RequireComponent(typeof(PlayerMovement), typeof(PlayerSlowmoManager))]
 public class PlayerInputManager : MonoBehaviour
 {
     #region Events
@@ -10,11 +10,17 @@ public class PlayerInputManager : MonoBehaviour
 
     #endregion
 
+    private InputMaster master;
+
+    #region Referenzes
+
     private PlayerMovement moveComp;
     private PlayerSlowmoManager slowmoComp;
+
+    [Header("Referenzes"), SerializeField]
     private PlayerAttack attackComp;
 
-    private InputMaster master;
+    #endregion
 
     #region Dash Fields
 
@@ -82,7 +88,6 @@ public class PlayerInputManager : MonoBehaviour
         // Get the referenzes
         moveComp = GetComponent<PlayerMovement>();
         slowmoComp = GetComponent<PlayerSlowmoManager>();
-        attackComp = GetComponent<PlayerAttack>();
 
         #region InputMaster
 
@@ -114,7 +119,7 @@ public class PlayerInputManager : MonoBehaviour
         master.Ingame.ToggleSlowmo.started += _ => slowmoComp.ToggleSlowmo();
 
         // Subscribe to Attack events
-        //master.Ingame.Attack.started += _ => attackComp.Attack();
+        master.Ingame.Attack.started += _ => attackComp.Attack(Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()) - transform.position);
 
         #endregion
     }
