@@ -56,9 +56,14 @@ public class PlayerMovement : MonoBehaviour
     private float accTime;
     [SerializeField, Range(0f, 1f), Tooltip("How long does it take to stop moving when you where at max speed")]
     private float deccTime;
+    [SerializeField, Range(0f, 20f), Tooltip("How fast does the velocity get reduced at high velocity if the player inputs in the opposite direction")]
+    private float highVeloAcc;
+    [SerializeField, Range(0f, 20f), Tooltip("How fast does the velocity get reduced at high velocity")]
+    private float highVeloDecc;
 
     private float move;         // saves the Inputs
     private float timer;        // a counter for the acc and decc of the object, when it reaches 1 or -1, the max velocity is reached
+    private bool isTimerSet;    // A controll variable that checks if the timer has been set after the player goes from high to low speed
 
     #endregion
 
@@ -339,7 +344,25 @@ public class PlayerMovement : MonoBehaviour
 
         if ((!isCrouching || isJumping) && !isWallJumping)
         {
-            velocity.x =  rb.velocity.x < moveSpeed && rb.velocity.x > -moveSpeed ? TimerToVelocity(timer) : velocity.x - velocity.x * deccTime * Time.fixedDeltaTime;
+            // Apply the movement
+            if (rb.velocity.x <= moveSpeed && rb.velocity.x >= -moveSpeed)
+            {
+                if (!isTimerSet)
+                {
+                    // Sets the timer to the current velocity
+                    timer = VelocityToTimer(rb.velocity.x);
+                    isTimerSet = true;
+                }
+
+                // Low velocity
+                velocity.x = TimerToVelocity(timer);
+            }
+            else
+            {
+                // High velocity
+                velocity.x -= (move > 0 && velocity.x < 0 || move < 0 && velocity.x > 0 ? highVeloAcc : highVeloDecc) * Time.fixedDeltaTime * (velocity.x > 0 ? 1 : -1);
+                isTimerSet = false;
+            }
         }
 
         if (isJumping)
