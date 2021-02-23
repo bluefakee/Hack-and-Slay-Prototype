@@ -201,21 +201,19 @@ public class PlayerMovement : MonoBehaviour
     {
         if (debugStats)
         {
-            int y = 0;
-
-            GUI.Box(new Rect(0, y, 200, 25), "Velocity = " + rb.velocity.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "Gravity Scale = " + rb.gravityScale.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "Input Move = " + move.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "Internal Move = " + timer.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "isGrounded = " + isGrounded.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "isCeilingAbove = " + isCeilingAbove.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "isWallLeft = " + isWallLeft.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "isWallRight = " + isWallRight.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "isSliding = " + isSliding.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "isJumping = " + isJumping.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "isWallJumping = " + isWallJumping.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "isCrouching = " + isCrouching.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "isDashing = " + isDashing.ToString()); y += 25;
+            GUILayout.Box("Velocity = " + rb.velocity.ToString());
+            GUILayout.Box("Gravity Scale = " + rb.gravityScale.ToString());
+            GUILayout.Box("Input Move = " + move.ToString());
+            GUILayout.Box("Internal Move = " + timer.ToString());
+            GUILayout.Box("isGrounded = " + isGrounded.ToString());
+            GUILayout.Box("isCeilingAbove = " + isCeilingAbove.ToString());
+            GUILayout.Box("isWallLeft = " + isWallLeft.ToString());
+            GUILayout.Box("isWallRight = " + isWallRight.ToString());
+            GUILayout.Box("isSliding = " + isSliding.ToString());
+            GUILayout.Box("isJumping = " + isJumping.ToString());
+            GUILayout.Box("isWallJumping = " + isWallJumping.ToString());
+            GUILayout.Box("isCrouching = " + isCrouching.ToString());
+            GUILayout.Box("isDashing = " + isDashing.ToString());
         }
     }
 

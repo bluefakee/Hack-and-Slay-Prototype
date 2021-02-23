@@ -81,6 +81,14 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Toggle Slowmo"",
+                    ""type"": ""Button"",
+                    ""id"": ""c8efda2f-f5d8-43b8-9f95-78d9618d21d8"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -193,6 +201,17 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""action"": ""Drop"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d0f42732-3ff7-47d8-af65-85f83c1c3fe3"",
+                    ""path"": ""<Keyboard>/capsLock"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Mouse and Keyboard"",
+                    ""action"": ""Toggle Slowmo"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -226,6 +245,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
         m_Ingame_Shoot = m_Ingame.FindAction("Shoot", throwIfNotFound: true);
         m_Ingame_Throw = m_Ingame.FindAction("Throw", throwIfNotFound: true);
         m_Ingame_Drop = m_Ingame.FindAction("Drop", throwIfNotFound: true);
+        m_Ingame_ToggleSlowmo = m_Ingame.FindAction("Toggle Slowmo", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -283,6 +303,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
     private readonly InputAction m_Ingame_Shoot;
     private readonly InputAction m_Ingame_Throw;
     private readonly InputAction m_Ingame_Drop;
+    private readonly InputAction m_Ingame_ToggleSlowmo;
     public struct IngameActions
     {
         private @InputMaster m_Wrapper;
@@ -295,6 +316,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
         public InputAction @Shoot => m_Wrapper.m_Ingame_Shoot;
         public InputAction @Throw => m_Wrapper.m_Ingame_Throw;
         public InputAction @Drop => m_Wrapper.m_Ingame_Drop;
+        public InputAction @ToggleSlowmo => m_Wrapper.m_Ingame_ToggleSlowmo;
         public InputActionMap Get() { return m_Wrapper.m_Ingame; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -328,6 +350,9 @@ public class @InputMaster : IInputActionCollection, IDisposable
                 @Drop.started -= m_Wrapper.m_IngameActionsCallbackInterface.OnDrop;
                 @Drop.performed -= m_Wrapper.m_IngameActionsCallbackInterface.OnDrop;
                 @Drop.canceled -= m_Wrapper.m_IngameActionsCallbackInterface.OnDrop;
+                @ToggleSlowmo.started -= m_Wrapper.m_IngameActionsCallbackInterface.OnToggleSlowmo;
+                @ToggleSlowmo.performed -= m_Wrapper.m_IngameActionsCallbackInterface.OnToggleSlowmo;
+                @ToggleSlowmo.canceled -= m_Wrapper.m_IngameActionsCallbackInterface.OnToggleSlowmo;
             }
             m_Wrapper.m_IngameActionsCallbackInterface = instance;
             if (instance != null)
@@ -356,6 +381,9 @@ public class @InputMaster : IInputActionCollection, IDisposable
                 @Drop.started += instance.OnDrop;
                 @Drop.performed += instance.OnDrop;
                 @Drop.canceled += instance.OnDrop;
+                @ToggleSlowmo.started += instance.OnToggleSlowmo;
+                @ToggleSlowmo.performed += instance.OnToggleSlowmo;
+                @ToggleSlowmo.canceled += instance.OnToggleSlowmo;
             }
         }
     }
@@ -379,5 +407,6 @@ public class @InputMaster : IInputActionCollection, IDisposable
         void OnShoot(InputAction.CallbackContext context);
         void OnThrow(InputAction.CallbackContext context);
         void OnDrop(InputAction.CallbackContext context);
+        void OnToggleSlowmo(InputAction.CallbackContext context);
     }
 }

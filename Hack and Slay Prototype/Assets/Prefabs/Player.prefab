@@ -124,6 +124,8 @@ GameObject:
   - component: {fileID: 1517986791613217634}
   - component: {fileID: 857295812560386621}
   - component: {fileID: 7159213248076516550}
+  - component: {fileID: 373000792273252591}
+  - component: {fileID: 1294719857339790739}
   - component: {fileID: 5750439719815848142}
   - component: {fileID: 1474873815478170814}
   m_Layer: 0
@@ -164,10 +166,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d52cefffeca626a4fa0eac6bb3c9cca9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dashRecoverStart: 0.5
-  dashRecoverTime: 0.16
-  dashTimeLossMulti: 0.3
-  debugStats: 1
+  dashRecoverStart: 0.35
+  dashRecoverTime: 0.15
+  debugStats: 0
 --- !u!114 &7159213248076516550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212,6 +213,38 @@ MonoBehaviour:
   dashMomentum: 0.6666
   debugChecks: 0
   debugStats: 0
+--- !u!114 &373000792273252591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1517986791613217635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7734365f0fafa0843ae9118ec58ed14f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slowmo: 0.5
+  slowmoDurr: 5
+  slowmoRecover: 1
+  minSlowmo: 0.2
+  debug: 1
+--- !u!114 &1294719857339790739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1517986791613217635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0324385a3b85c7c4390dc4cbae25363a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitbox: {x: 0, y: 0}
+  offset: 0
+  slideDurr: 0
 --- !u!50 &5750439719815848142
 Rigidbody2D:
   serializedVersion: 4

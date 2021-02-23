@@ -68,6 +68,14 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "Toggle Slowmo",
+                    "type": "Button",
+                    "id": "c8efda2f-f5d8-43b8-9f95-78d9618d21d8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -178,6 +186,17 @@
                     "processors": "",
                     "groups": "Mouse and Keyboard",
                     "action": "Drop",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d0f42732-3ff7-47d8-af65-85f83c1c3fe3",
+                    "path": "<Keyboard>/capsLock",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse and Keyboard",
+                    "action": "Toggle Slowmo",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

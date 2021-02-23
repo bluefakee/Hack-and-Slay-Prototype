@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;          // Getting the mousePosition for dashing
 
-[RequireComponent(typeof(PlayerMovement))]
+[RequireComponent(typeof(PlayerMovement), typeof(PlayerSlowmoManager), typeof(PlayerAttack))]
 public class PlayerInputManager : MonoBehaviour
 {
     #region Events
@@ -11,6 +11,8 @@ public class PlayerInputManager : MonoBehaviour
     #endregion
 
     private PlayerMovement moveComp;
+    private PlayerSlowmoManager slowmoComp;
+    private PlayerAttack attackComp;
 
     private InputMaster master;
 
@@ -38,9 +40,8 @@ public class PlayerInputManager : MonoBehaviour
     {
         if (debugStats)
         {
-            int y = 0;
-            GUI.Box(new Rect(0, y, 200, 25), "Dashes: " + dashUses.ToString()); y += 25;
-            GUI.Box(new Rect(0, y, 200, 25), "Counter: " + counter.ToString()); y += 25;
+            GUILayout.Box("Dashes: " + dashUses.ToString());
+            GUILayout.Box("Counter: " + counter.ToString());
         }
     }
 
@@ -78,11 +79,15 @@ public class PlayerInputManager : MonoBehaviour
     {
         ResetCounter();
 
-        // Initialize the master
-        master = new InputMaster();
-
         // Get the referenzes
         moveComp = GetComponent<PlayerMovement>();
+        slowmoComp = GetComponent<PlayerSlowmoManager>();
+        attackComp = GetComponent<PlayerAttack>();
+
+        #region InputMaster
+
+        // Initialize the master
+        master = new InputMaster();
 
         // Subscribe to Movement events
         master.Ingame.Movement.started += _ => moveComp.SetMove(_.ReadValue<float>());
@@ -104,6 +109,14 @@ public class PlayerInputManager : MonoBehaviour
             dashUses--;
             ResetCounter();
         };
+
+        // Subscribe to Slowmo events
+        master.Ingame.ToggleSlowmo.started += _ => slowmoComp.ToggleSlowmo();
+
+        // Subscribe to Attack events
+        //master.Ingame.Attack.started += _ => attackComp.Attack();
+
+        #endregion
     }
 
     // Prevent that master events call methods and cause weird behaviour or exceptions
