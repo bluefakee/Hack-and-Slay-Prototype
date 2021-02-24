@@ -125,6 +125,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("Walljumping"), SerializeField, Range(0f, 10f), Tooltip("How fast is the velocity when jumping of a wall")]
     private float wallJumpForce;
 
+    [SerializeField, Range(0f, 1f), Tooltip("This field multiplys the horizontal speed that the player gets when wallJumping")]
+    private float wallJumpxForceMulti;
+
     [SerializeField, Range(0f, 1f), Tooltip("How long does the wallJump get executed (note that it cannot be canceled)")]
     private float wallJumpDurr;
 
@@ -148,12 +151,12 @@ public class PlayerMovement : MonoBehaviour
 
         isCrouching = value;
 
-        // Allow only to change the value when dashing
-        if (isDashing) return;
-
         // Assigns new Collider size
         coll.size = new Vector2(coll.size.x, coll.size.y * (isCrouching ? ySizeMulti : 1 / ySizeMulti));
         coll.offset += new Vector2(0, isCrouching ? -coll.size.y * 0.5f : coll.size.y * 0.5f * ySizeMulti);
+
+        // Allow only to change the value when dashing
+        if (isDashing) return;
 
         // This recalculates the timer to fit the rb.velocity after crouching
         if (!isCrouching) timer = VelocityToTimer(rb.velocity.x);
@@ -266,7 +269,7 @@ public class PlayerMovement : MonoBehaviour
             // same like above, only for left and decreasing
             timer = Mathf.Clamp(timer - Time.deltaTime * (isGrounded ? 1 : midAirSlow) / accTime, move, 1);
         }
-        else if (isGrounded)
+        else// if (isGrounded)
         {
             // no input or the timer results in faster movement when the inputs allow -> the timer nears to 0
             timer = timer > 0 ? Mathf.Clamp(timer - Time.deltaTime * (isGrounded ? 1 : midAirSlow) / deccTime, 0, 1) :
@@ -294,7 +297,7 @@ public class PlayerMovement : MonoBehaviour
         {
             // Cancel wallJump
             isWallJumping = false;
-            timer = direction;
+            timer = VelocityToTimer(direction * wallJumpxForceMulti * moveSpeed);
         }
 
         #endregion
@@ -377,7 +380,7 @@ public class PlayerMovement : MonoBehaviour
         if (isWallJumping)
         {
             // Apply wallJumpForce to velocity.y
-            velocity = new Vector2(direction * moveSpeed, wallJumpForce > rb.velocity.y ? wallJumpForce : rb.velocity.y);
+            velocity = new Vector2(direction * moveSpeed * wallJumpxForceMulti, wallJumpForce > rb.velocity.y ? wallJumpForce : rb.velocity.y);
         }
 
         rb.velocity = velocity;
@@ -400,6 +403,19 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.velocity = new Vector2(isWallLeft && direction.x < 0 || isWallRight && direction.x > 0 ? 0 : direction.x,
                 isGrounded && direction.y < 0 || isCeilingAbove && direction.y > 0 ? 0 : direction.y) * dashRange / dashDurr;
+
+            // Update states while not jumping
+            if (!isJumping)
+            {
+                if (crouch != isCrouching)
+                    crouch = isCrouching;
+
+                if (sliding != isWallLeft || isWallRight)
+                    sliding = isWallLeft || isWallRight;
+
+                if (grounded != isGrounded)
+                    grounded = isGrounded;
+            }
 
             // Check if the player was grounded or sliding and is not grounded or sliding anymore
             if (grounded && !isGrounded && isJumping)
@@ -443,7 +459,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Sets new velocity
-        if (!(isGrounded || isSliding)) rb.velocity = rb.velocity.normalized * dashBoost;
+        if (!(isGrounded && isCrouching || isSliding && isJumping)) rb.velocity = rb.velocity.normalized * dashBoost;
         else rb.velocity *= dashMomentum;
 
         // Jump got called while dashing -> the jump gets executed afterward

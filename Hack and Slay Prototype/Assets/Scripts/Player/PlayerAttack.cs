@@ -10,7 +10,16 @@ public class PlayerAttack : MonoBehaviour
 
     private BoxCollider2D coll;
 
-    private bool isAttacking { get => coll.enabled; set => coll.enabled = value; }
+    private bool isAttacking
+    {
+        get => coll.enabled;
+        set
+        {
+            coll.enabled = value;
+            coll.gameObject.layer += value ? -1 : 1;
+            transform.GetChild(0).gameObject.SetActive(value);
+        }
+    }
 
     private IEnumerator _Attack(Vector2 direction)
     {
@@ -21,16 +30,12 @@ public class PlayerAttack : MonoBehaviour
         transform.rotation = Quaternion.Euler(0, 0, Mathf.Acos(direction.y / Mathf.Sqrt(Mathf.Pow(direction.x, 2) + Mathf.Pow(direction.y, 2))) * Mathf.Rad2Deg * (direction.x > 0 ? -1 : 1));
 
         // Activate the collider to register collision
-        coll.enabled = true;
-
-        // Change the layer to attack layer so it can register enemys (see projectsettings.Physics2D)
-        coll.gameObject.layer--;
+        isAttacking = true;
 
         yield return new WaitForSeconds(durr);
 
         // Reverse changes made
-        coll.enabled = false;
-        coll.gameObject.layer++;
+        isAttacking = false;
 
         yield break;
     }
