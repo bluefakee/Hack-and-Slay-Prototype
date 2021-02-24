@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;                           // Actions
+using UnityEngine;
 using UnityEngine.InputSystem;          // Getting the mousePosition for dashing
 
 [RequireComponent(typeof(PlayerMovement), typeof(PlayerSlowmoManager))]
@@ -6,7 +7,20 @@ public class PlayerInputManager : MonoBehaviour
 {
     #region Events
 
+    /// <summary>
+    /// Passes the number of dashes
+    /// </summary>
+    public static Action<int> dashCounter;
 
+    /// <summary>
+    /// Passes the progress of the dash recovery in percentage from 0 to 1
+    /// </summary>
+    public static Action<float> dashRecoverProgress;
+
+    /// <summary>
+    /// Passes the progress of the initial time that needs to pass in order to recover dashes in percentage from 0 to 1
+    /// </summary>
+    public static Action<float> dashRecoverStartProgress;
 
     #endregion
 
@@ -64,10 +78,22 @@ public class PlayerInputManager : MonoBehaviour
                 // Recover dashes
                 counter -= Time.deltaTime;
 
+                // Call actions
+                if (counter >= dashRecoverStart)
+                {
+                    dashRecoverStartProgress?.Invoke((counter - dashRecoverTime) / dashRecoverStart);
+                    dashRecoverProgress?.Invoke(0);
+                }
+                else
+                {
+                    dashRecoverProgress?.Invoke(counter / dashRecoverTime);
+                }
+
                 if (counter <= 0)
                 {
-                    // Counted down => recover a dashUse
+                    // Counted down => recover a dashUse and call the dashCounter
                     dashUses++;
+                    dashCounter?.Invoke(dashUses);
                     counter = dashRecoverTime;
                 }
             }
@@ -83,7 +109,7 @@ public class PlayerInputManager : MonoBehaviour
 
     private void Awake()
     {
-        ResetCounter();
+        dashUses = 3;
 
         // Get the referenzes
         moveComp = GetComponent<PlayerMovement>();

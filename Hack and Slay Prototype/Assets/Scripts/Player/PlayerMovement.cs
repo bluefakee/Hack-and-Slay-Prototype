@@ -5,9 +5,12 @@ using UnityEngine;
 // In Update all regions have a explanation of what the code there does
 // If you experience bugs and things that you think shouldnt happen or just need help, just dm me on discord (bluefake#3507)
 
-// Work In Progress:
+// Important Work In Progress: 
 // Eventsystem for Animations
-// Crouch does not change the position of the checks
+// (Crouch does not change the position of the checks)
+
+// Quality of life ídeas:
+// If the player jumps while dashing, becoming not grounded or not at a wall automaticly makes the player (wall)jump
 
 [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
 public class PlayerMovement : MonoBehaviour
@@ -385,8 +388,10 @@ public class PlayerMovement : MonoBehaviour
         // Reset slide since it will else not cancel properly
         SetSlide(false);
 
-        // Save the current state of isCrouching
+        // Save the current states
         bool crouch = isCrouching;
+        bool sliding = isWallLeft || isWallRight;
+        bool grounded = isGrounded;
 
         // Start the dashloop
         isDashing = true;
@@ -396,17 +401,35 @@ public class PlayerMovement : MonoBehaviour
             rb.velocity = new Vector2(isWallLeft && direction.x < 0 || isWallRight && direction.x > 0 ? 0 : direction.x,
                 isGrounded && direction.y < 0 || isCeilingAbove && direction.y > 0 ? 0 : direction.y) * dashRange / dashDurr;
 
+            // Check if the player was grounded or sliding and is not grounded or sliding anymore
+            if (grounded && !isGrounded && isJumping)
+            {
+                isGrounded = true;
+                break;
+            }
+            if (sliding && !(isWallLeft || isWallRight) && isJumping)
+            {
+                // Already reset gravity here to prevent bugs
+                rb.gravityScale = defaultGrav;
+                SetSlide(true);
+                break;
+            }
+
             yield return new WaitForFixedUpdate();
         }
         isDashing = false;
 
-        // Reset gravity
-        rb.gravityScale = defaultGrav;
-
-        // Set Sliding if dashed to a wall
-        if (isWallLeft || isWallRight)
+        // The isSliding prevents gravity bugs that could be caused by Setting isSlide and breaking out of the dash loop
+        if (!isSliding)
         {
-            SetSlide(true);
+            // Reset gravity
+            rb.gravityScale = defaultGrav;
+
+            // Set Sliding if dashed to a wall
+            if (isWallLeft || isWallRight)
+            {
+                SetSlide(true);
+            }
         }
 
         // Change gravity depending on crouch
