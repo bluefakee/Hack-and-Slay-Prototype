@@ -51,6 +51,14 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""interactions"": """"
                 },
                 {
+                    ""name"": ""RunUp"",
+                    ""type"": ""Button"",
+                    ""id"": ""14bf5191-ee1b-4904-a57c-e19e70c1558c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
                     ""name"": ""Attack"",
                     ""type"": ""Button"",
                     ""id"": ""e74130ac-36de-4138-b5e6-0047c47a6ed8"",
@@ -181,9 +189,9 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": ""WASD"",
-                    ""id"": ""cc2dd957-e0c7-49bc-8123-6e10bd53f1bb"",
-                    ""path"": ""2DVector(mode=2)"",
+                    ""name"": ""AD "",
+                    ""id"": ""9a2fc126-f11c-47ab-b5c5-11abb5054047"",
+                    ""path"": ""1DAxis"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -192,30 +200,8 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": ""up"",
-                    ""id"": ""4c9e051a-77ab-40f9-b46d-782f175dea6a"",
-                    ""path"": ""<Keyboard>/w"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Mouse and Keyboard"",
-                    ""action"": ""Movement"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""down"",
-                    ""id"": ""6d16a08c-5def-4826-a8df-eec2f81066df"",
-                    ""path"": ""<Keyboard>/s"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Mouse and Keyboard"",
-                    ""action"": ""Movement"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""left"",
-                    ""id"": ""1a6d4447-b578-4fcd-bc45-cadef83cf4df"",
+                    ""name"": ""negative"",
+                    ""id"": ""0df59620-df94-458b-8d94-f1f400477225"",
                     ""path"": ""<Keyboard>/a"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -225,8 +211,8 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": ""right"",
-                    ""id"": ""151adb1c-12d2-4a7b-9a72-896fb6a563a7"",
+                    ""name"": ""positive"",
+                    ""id"": ""e03bec20-54db-4db4-b523-4d7b29854cd3"",
                     ""path"": ""<Keyboard>/d"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -234,6 +220,17 @@ public class @InputMaster : IInputActionCollection, IDisposable
                     ""action"": ""Movement"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b3770078-a579-4953-bb13-28172be072bf"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Mouse and Keyboard"",
+                    ""action"": ""RunUp"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -263,6 +260,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
         m_Ingame_Jump = m_Ingame.FindAction("Jump", throwIfNotFound: true);
         m_Ingame_Dash = m_Ingame.FindAction("Dash", throwIfNotFound: true);
         m_Ingame_Crouch = m_Ingame.FindAction("Crouch", throwIfNotFound: true);
+        m_Ingame_RunUp = m_Ingame.FindAction("RunUp", throwIfNotFound: true);
         m_Ingame_Attack = m_Ingame.FindAction("Attack", throwIfNotFound: true);
         m_Ingame_Shoot = m_Ingame.FindAction("Shoot", throwIfNotFound: true);
         m_Ingame_Throw = m_Ingame.FindAction("Throw", throwIfNotFound: true);
@@ -321,6 +319,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
     private readonly InputAction m_Ingame_Jump;
     private readonly InputAction m_Ingame_Dash;
     private readonly InputAction m_Ingame_Crouch;
+    private readonly InputAction m_Ingame_RunUp;
     private readonly InputAction m_Ingame_Attack;
     private readonly InputAction m_Ingame_Shoot;
     private readonly InputAction m_Ingame_Throw;
@@ -334,6 +333,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
         public InputAction @Jump => m_Wrapper.m_Ingame_Jump;
         public InputAction @Dash => m_Wrapper.m_Ingame_Dash;
         public InputAction @Crouch => m_Wrapper.m_Ingame_Crouch;
+        public InputAction @RunUp => m_Wrapper.m_Ingame_RunUp;
         public InputAction @Attack => m_Wrapper.m_Ingame_Attack;
         public InputAction @Shoot => m_Wrapper.m_Ingame_Shoot;
         public InputAction @Throw => m_Wrapper.m_Ingame_Throw;
@@ -360,6 +360,9 @@ public class @InputMaster : IInputActionCollection, IDisposable
                 @Crouch.started -= m_Wrapper.m_IngameActionsCallbackInterface.OnCrouch;
                 @Crouch.performed -= m_Wrapper.m_IngameActionsCallbackInterface.OnCrouch;
                 @Crouch.canceled -= m_Wrapper.m_IngameActionsCallbackInterface.OnCrouch;
+                @RunUp.started -= m_Wrapper.m_IngameActionsCallbackInterface.OnRunUp;
+                @RunUp.performed -= m_Wrapper.m_IngameActionsCallbackInterface.OnRunUp;
+                @RunUp.canceled -= m_Wrapper.m_IngameActionsCallbackInterface.OnRunUp;
                 @Attack.started -= m_Wrapper.m_IngameActionsCallbackInterface.OnAttack;
                 @Attack.performed -= m_Wrapper.m_IngameActionsCallbackInterface.OnAttack;
                 @Attack.canceled -= m_Wrapper.m_IngameActionsCallbackInterface.OnAttack;
@@ -391,6 +394,9 @@ public class @InputMaster : IInputActionCollection, IDisposable
                 @Crouch.started += instance.OnCrouch;
                 @Crouch.performed += instance.OnCrouch;
                 @Crouch.canceled += instance.OnCrouch;
+                @RunUp.started += instance.OnRunUp;
+                @RunUp.performed += instance.OnRunUp;
+                @RunUp.canceled += instance.OnRunUp;
                 @Attack.started += instance.OnAttack;
                 @Attack.performed += instance.OnAttack;
                 @Attack.canceled += instance.OnAttack;
@@ -425,6 +431,7 @@ public class @InputMaster : IInputActionCollection, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnDash(InputAction.CallbackContext context);
         void OnCrouch(InputAction.CallbackContext context);
+        void OnRunUp(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
         void OnShoot(InputAction.CallbackContext context);
         void OnThrow(InputAction.CallbackContext context);

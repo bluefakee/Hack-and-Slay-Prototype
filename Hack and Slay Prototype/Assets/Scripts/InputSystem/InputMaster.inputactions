@@ -38,6 +38,14 @@
                     "interactions": ""
                 },
                 {
+                    "name": "RunUp",
+                    "type": "Button",
+                    "id": "14bf5191-ee1b-4904-a57c-e19e70c1558c",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
                     "name": "Attack",
                     "type": "Button",
                     "id": "e74130ac-36de-4138-b5e6-0047c47a6ed8",
@@ -168,9 +176,9 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "WASD",
-                    "id": "cc2dd957-e0c7-49bc-8123-6e10bd53f1bb",
-                    "path": "2DVector(mode=2)",
+                    "name": "AD ",
+                    "id": "9a2fc126-f11c-47ab-b5c5-11abb5054047",
+                    "path": "1DAxis",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -179,30 +187,8 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "up",
-                    "id": "4c9e051a-77ab-40f9-b46d-782f175dea6a",
-                    "path": "<Keyboard>/w",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Mouse and Keyboard",
-                    "action": "Movement",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "down",
-                    "id": "6d16a08c-5def-4826-a8df-eec2f81066df",
-                    "path": "<Keyboard>/s",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Mouse and Keyboard",
-                    "action": "Movement",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "left",
-                    "id": "1a6d4447-b578-4fcd-bc45-cadef83cf4df",
+                    "name": "negative",
+                    "id": "0df59620-df94-458b-8d94-f1f400477225",
                     "path": "<Keyboard>/a",
                     "interactions": "",
                     "processors": "",
@@ -212,8 +198,8 @@
                     "isPartOfComposite": true
                 },
                 {
-                    "name": "right",
-                    "id": "151adb1c-12d2-4a7b-9a72-896fb6a563a7",
+                    "name": "positive",
+                    "id": "e03bec20-54db-4db4-b523-4d7b29854cd3",
                     "path": "<Keyboard>/d",
                     "interactions": "",
                     "processors": "",
@@ -221,6 +207,17 @@
                     "action": "Movement",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "b3770078-a579-4953-bb13-28172be072bf",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse and Keyboard",
+                    "action": "RunUp",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

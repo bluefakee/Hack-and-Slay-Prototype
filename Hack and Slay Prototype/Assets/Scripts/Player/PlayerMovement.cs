@@ -2,15 +2,12 @@
 using UnityEngine;
 
 // PlayerMovement writen by bluefake
-// In Update all regions have a explanation of what the code there does
 // If you experience bugs and things that you think shouldnt happen or just need help, just dm me on discord (bluefake#3507)
 
 // Important Work In Progress: 
 // Eventsystem for Animations
+// Ceilingrun
 // (Crouch does not change the position of the checks)
-
-// Quality of life ídeas:
-// If the player jumps while dashing, becoming not grounded or not at a wall automaticly makes the player (wall)jump
 
 [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
 public class PlayerMovement : MonoBehaviour
@@ -104,10 +101,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField, Range(0f, 100f), Tooltip("How fast is the fallspeed reduced per second if it the player falls faster when the maxSpeed")]
     private float fallRecover;
 
+    [SerializeField, Range(0f, 20f), Tooltip("The speed at which the character runs walls up")]
+    private float runUpSpeed;
+
     private float unAttachTimer;    // Countdown until the sliding gets canceled
     private int direction;          // Saves where the player is jumping to
 
     private bool isSliding;         // Its recommended to use SetSlide since it also changes the gravity
+    private bool isRunningUp;
 
     private void SetSlide(bool value)
     {
@@ -262,12 +263,12 @@ public class PlayerMovement : MonoBehaviour
         if (move > 0 && timer <= move && (!isCrouching || !isGrounded))
         {
             // the timer is not bigger as move and the player inputs right, timer increases intil it reaches move
-            timer = Mathf.Clamp(timer + Time.deltaTime * (isGrounded ? 1 : midAirSlow) / accTime, -1, move);
+            timer = Mathf.Clamp(timer + Time.deltaTime * (isGrounded ? 1 : midAirSlow) / (timer < 0 ? deccTime : accTime), -1, move);
         }
         else if (move < 0 && timer >= move && (!isCrouching || !isGrounded))
         {
             // same like above, only for left and decreasing
-            timer = Mathf.Clamp(timer - Time.deltaTime * (isGrounded ? 1 : midAirSlow) / accTime, move, 1);
+            timer = Mathf.Clamp(timer - Time.deltaTime * (isGrounded ? 1 : midAirSlow) / (timer < 0 ? accTime : deccTime), move, 1);
         }
         else// if (isGrounded)
         {
@@ -342,7 +343,13 @@ public class PlayerMovement : MonoBehaviour
         // Get the velocity
         Vector2 velocity = rb.velocity;
 
-        if (velocity.y < (isSliding && !isCrouching ? maxSlideDrag : maxDrag))
+
+        if (isRunningUp && isSliding)        // When the player runs up while wallsiding and no ceiling is above
+        {
+            // WallRun
+            velocity.y = runUpSpeed;
+        }
+        else if (velocity.y < (isSliding && !isCrouching ? maxSlideDrag : maxDrag))
         {
             // Limit the fallspeed
             velocity.y += fallRecover * Time.fixedDeltaTime;
@@ -550,6 +557,8 @@ public class PlayerMovement : MonoBehaviour
     /// <para>Its recommented to use it with GetKeyDown and GetKeyUp or something similar</para>
     /// </summary>
     public void Crouch(bool crouch) => SetCrouch(crouch);
+
+    public void RunUp(bool runUp) => isRunningUp = runUp;
 
     /// <summary>
     /// Lets the player dash in direction. The direction is internally normalized

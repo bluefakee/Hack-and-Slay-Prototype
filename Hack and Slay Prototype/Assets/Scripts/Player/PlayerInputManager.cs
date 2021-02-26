@@ -13,8 +13,6 @@ public class PlayerInputManager : MonoBehaviour
     [Header("Referenzes"), SerializeField]
     private PlayerAttack attackComp;
 
-    private Vector2 input;
-
     private void Awake()
     {
         // Get the referenzes
@@ -24,15 +22,9 @@ public class PlayerInputManager : MonoBehaviour
 
         // Initialize the master
         master = new InputMaster();
-        
-        // Subscribe to Movement events
-        master.Ingame.Movement.performed += _ =>
-        {
-            // Save the input
-            input = _.ReadValue<Vector2>();
 
-            moveComp.SetMove(input.x);
-        };
+        // Subscribe to Movement events
+        master.Ingame.Movement.performed += _ => moveComp.SetMove(_.ReadValue<float>());
         master.Ingame.Movement.canceled += _ => moveComp.SetMove(0);
 
         // Subscribe to Jump events
@@ -43,8 +35,12 @@ public class PlayerInputManager : MonoBehaviour
         master.Ingame.Crouch.started += _ => moveComp.Crouch(true);
         master.Ingame.Crouch.canceled += _ => moveComp.Crouch(false);
 
+        // Subscribe to RunUp events
+        master.Ingame.RunUp.started += _ => moveComp.RunUp(true);
+        master.Ingame.RunUp.canceled += _ => moveComp.RunUp(false);
+
         // Subscribe to Dash events
-        master.Ingame.Dash.started += _ => dashComp.Dash(input);        // Dash in input direction
+        master.Ingame.Dash.started += _ => dashComp.Dash(Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()) - transform.position);
 
         // Subscribe to Slowmo events
         master.Ingame.ToggleSlowmo.started += _ => slowmoComp.ToggleSlowmo();
