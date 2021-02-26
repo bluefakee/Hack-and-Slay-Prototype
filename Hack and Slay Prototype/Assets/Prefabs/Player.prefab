@@ -179,6 +179,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   recover: 0.1
+  dashCorrect: 0.15
 --- !u!114 &7159213248076516550
 MonoBehaviour:
   m_ObjectHideFlags: 0

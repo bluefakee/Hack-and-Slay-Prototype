@@ -1,6 +1,8 @@
 ﻿using System;
 using UnityEngine;
 
+// This script handels the Dashcooldown and changes the dashdirection (when it is sligthly above when grounded, it gets set to 1,0/-1,0)
+
 public class PlayerDashManager : MonoBehaviour
 {
     /// <summary>
@@ -16,6 +18,9 @@ public class PlayerDashManager : MonoBehaviour
 
     [SerializeField, Range(0f, 1f), Tooltip("When does the player regenerate his dash")]
     private float recover;
+
+    [SerializeField, Range(0f, 1f), Tooltip("How much can this script override the dashdirection if needed")]
+    private float dashCorrect;
 
     private bool canDash = true;
     private float counter;
@@ -56,6 +61,19 @@ public class PlayerDashManager : MonoBehaviour
         // Bypass if not ready to dash
         if (!canDash) return;
 
+        direction.Normalize();
+
+        // Modify direction if needed
+        if (comp.isGrounded && direction.y < dashCorrect && direction.y > 0 || comp.isCeilingAbove && direction.y > -dashCorrect && direction.y < 0)     // If the direction is a little bit away from a Ceiling or Ground (how much is set by dashCorrect)
+        {
+            direction.y = 0;
+        }
+        if (comp.isWallLeft && direction.x < dashCorrect && direction.x > 0 || comp.isWallRight && direction.x > -dashCorrect && direction.x < 0)        // Same like above for walls
+        {
+            direction.x = 0;
+        }
+
+        // Execute dash
         comp.Dash(direction);
         counter = recover;
         canDash = false;
