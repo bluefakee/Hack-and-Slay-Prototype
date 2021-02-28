@@ -178,7 +178,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c7c71bb08bc54b44a45fe2a67faddb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  recover: 0.1
+  recover: 0.5
   dashCorrect: 0.15
 --- !u!114 &7159213248076516550
 MonoBehaviour:
@@ -205,7 +205,7 @@ MonoBehaviour:
     m_Bits: 256
   moveSpeed: 8
   accTime: 0.25
-  deccTime: 0.12
+  deccTime: 0.16
   highVeloAcc: 15
   highVeloDecc: 8
   jumpForce: 10
@@ -216,16 +216,16 @@ MonoBehaviour:
   slideGravMulti: 0.65
   maxSlideDrag: -6
   fallRecover: 65
-  runUpSpeed: 6
-  wallJumpForce: 5.5
+  runUpSpeed: 8
+  wallJumpForce: 8
   wallJumpxForceMulti: 0.65
   wallJumpDurr: 0.2
   ySizeMulti: 0.5
-  crouchGravMulti: 0.75
+  crouchGravMulti: 0.66
   dashRange: 4
   dashDurr: 0.15
   dashBoost: {x: 7, y: 7}
-  dashMomentum: 0.8
+  dashMomentum: 0.85
   debugChecks: 0
   debugStats: 1
 --- !u!114 &373000792273252591

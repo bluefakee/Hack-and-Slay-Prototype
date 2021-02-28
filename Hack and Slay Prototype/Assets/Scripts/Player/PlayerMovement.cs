@@ -104,11 +104,18 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField, Range(0f, 20f), Tooltip("The speed at which the character runs walls up")]
     private float runUpSpeed;
 
+    [SerializeField, Range(0f, 5f), Tooltip("How long can the player run on the Ceiling")]
+    private float ceilingRunDurr;
+
     private float unAttachTimer;    // Countdown until the sliding gets canceled
     private int direction;          // Saves where the player is jumping to
 
     private bool isSliding;         // Its recommended to use SetSlide since it also changes the gravity
     private bool isRunningUp;
+
+    private bool isCeilingRunning;
+    private int ceilingDir;
+    private float ceilingCounter;
 
     private void SetSlide(bool value)
     {
@@ -152,12 +159,12 @@ public class PlayerMovement : MonoBehaviour
 
         isCrouching = value;
 
+        // Allow only to change the value when dashing
+        if (isDashing) return;
+
         // Assigns new Collider size
         coll.size = new Vector2(coll.size.x, coll.size.y * (isCrouching ? ySizeMulti : 1 / ySizeMulti));
         coll.offset += new Vector2(0, isCrouching ? -coll.size.y * 0.5f : coll.size.y * 0.5f * ySizeMulti);
-
-        // Allow only to change the value when dashing
-        if (isDashing) return;
 
         // This recalculates the timer to fit the rb.velocity after crouching
         if (!isCrouching) timer = VelocityToTimer(rb.velocity.x);
@@ -226,6 +233,8 @@ public class PlayerMovement : MonoBehaviour
             GUILayout.Box("isWallJumping = " + isWallJumping.ToString());
             GUILayout.Box("isCrouching = " + isCrouching.ToString());
             GUILayout.Box("isDashing = " + isDashing.ToString());
+            GUILayout.Box("isRunningUp = " + isRunningUp.ToString());
+            GUILayout.Box("isCeilingRunning = " + isCeilingRunning.ToString());
         }
     }
 
@@ -289,7 +298,7 @@ public class PlayerMovement : MonoBehaviour
             // Count down the time the player is jumping up
             jumpTimer -= Time.deltaTime;
         }
-        else if (isJumping && !isDashing)
+        else if (isJumping && !isDashing && !isCeilingRunning)      // The !isCeilingRunning prevents bugs with the ceiling running
         {
             // Cancel jump
             isJumping = false;
@@ -334,6 +343,24 @@ public class PlayerMovement : MonoBehaviour
         }
 
         #endregion
+
+        if (isCeilingRunning)
+        {
+            ceilingCounter -= Time.deltaTime;
+        }
+        if (isCeilingRunning && (ceilingDir < 0 && timer >= 0 || ceilingDir > 0 && timer <= 0 || isJumping || !isCeilingAbove || ceilingCounter <= 0))
+        {   // If the player runs on the ceiling and the player moves to the opposite running direction  or canceles the run with a jump or there is no ceiling anymore
+            // Reset grav
+            rb.gravityScale = defaultGrav;
+            isCeilingRunning = false;
+
+            if (isJumping)
+            {
+                // Reset the jump and add force down
+                isJumping = false;
+                rb.velocity = new Vector2(rb.velocity.x, -jumpForce);
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -414,9 +441,6 @@ public class PlayerMovement : MonoBehaviour
             // Update states while not jumping
             if (!isJumping)
             {
-                if (crouch != isCrouching)
-                    crouch = isCrouching;
-
                 if (sliding != isWallLeft || isWallRight)
                     sliding = isWallLeft || isWallRight;
 
@@ -443,7 +467,7 @@ public class PlayerMovement : MonoBehaviour
         isDashing = false;
 
         // The isSliding prevents gravity bugs that could be caused by Setting isSlide and breaking out of the dash loop
-        if (!isSliding)
+        if (!isSliding && !isCeilingAbove)
         {
             // Reset gravity
             rb.gravityScale = defaultGrav;
@@ -466,7 +490,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Sets new velocity
-        if (!(isGrounded && isCrouching || isSliding && isJumping)) rb.velocity = rb.velocity.normalized * dashBoost;
+        if (!(isGrounded && isCrouching) && !(isSliding && isJumping)) rb.velocity = rb.velocity.normalized * dashBoost;
         else rb.velocity *= dashMomentum;
 
         // Jump got called while dashing -> the jump gets executed afterward
@@ -474,6 +498,15 @@ public class PlayerMovement : MonoBehaviour
         {
             isJumping = false;
             Jump();
+        }
+
+        // Start CeilingRunning
+        if (isCeilingAbove)
+        {
+            isCeilingRunning = true;
+            ceilingDir = direction.x < 0 ? -1 : 1;
+            timer = ceilingDir;
+            ceilingCounter = ceilingRunDurr;
         }
 
         // Set timer
@@ -515,7 +548,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     public void Jump()
     {
-        if (!(isGrounded || isSliding || isDashing)) return;
+        if (!(isGrounded || isSliding || isDashing || isCeilingRunning)) return;
 
         // Depending on if the player is on a wall or floor, start (wall-)jumping
         if (isGrounded)
