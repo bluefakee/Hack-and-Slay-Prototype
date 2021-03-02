@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;          // Getting the mousePosition for dashing
 [RequireComponent(typeof(PlayerMovement), typeof(PlayerSlowmoManager), typeof(PlayerDashManager))]
 public class PlayerInputManager : MonoBehaviour
 {
-    public static PlayerInputManager player { get; private set; }
+    public static Transform playertrans { get; private set; }
 
     private InputMaster master;
 
@@ -15,9 +15,12 @@ public class PlayerInputManager : MonoBehaviour
     [Header("Referenzes"), SerializeField]
     private PlayerAttack attackComp;
 
+    [SerializeField]
+    private Transform playerCenter;
+
     private void Awake()
     {
-        player = this;
+        playertrans = playerCenter == null ? transform : playerCenter;
 
         // Get the referenzes
         moveComp = GetComponent<PlayerMovement>();

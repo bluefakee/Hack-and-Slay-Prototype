@@ -166,6 +166,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackComp: {fileID: 5887540327381205057}
+  playerCenter: {fileID: 3827545790011574872}
 --- !u!114 &9017685753689988113
 MonoBehaviour:
   m_ObjectHideFlags: 0

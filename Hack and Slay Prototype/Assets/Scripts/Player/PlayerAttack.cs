@@ -16,6 +16,8 @@ public class PlayerAttack : MonoBehaviour
         get => coll.enabled;
         set
         {
+            if (isAttacking == value) return;
+
             coll.enabled = value;
             coll.gameObject.layer += value ? -1 : 1;
             transform.GetChild(0).gameObject.SetActive(value);
