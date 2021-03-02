@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;           // IEnumerator interface
+using System;
 
 // This script must be attached to the attackCollider
 
@@ -42,7 +43,16 @@ public class PlayerAttack : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D coll)
     {
-        Debug.Log("Object getroffen: " + coll.name);
+        if (coll.gameObject.layer == LayerMask.NameToLayer("Ground"))
+        {
+            // Play animation that the players attack gets interrupted
+        }
+        else if (coll.gameObject.layer == LayerMask.NameToLayer("Enemy"))
+        {
+            // Enemy hit, the try catch prevents exceptions if I was dumb and forgot to inherit IEnemy
+            try { coll.GetComponent<IEnemy>().OnHit(); }
+            catch (NullReferenceException) { Debug.LogWarning("Warning from PlayerAttack. A object with Enemy layer has no script that inherits from IEnemy"); }
+        }
     }
 
     private void Awake()

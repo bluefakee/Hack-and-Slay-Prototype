@@ -6,9 +6,9 @@ using UnityEngine;
 public class PlayerDashManager : MonoBehaviour
 {
     /// <summary>
-    /// Gets called when canDash gets updated and passes canDash
+    /// Gets called when the amount of available dashes gets updated and passes the amount of dashes
     /// </summary>
-    public static Action<bool> UpdateDash;
+    public static Action<int> UpdateDash;
 
     /// <summary>
     /// Gets called when the internal counter gets updated. The value passed in is the counter / recover (a value between 0 and 1)
@@ -16,13 +16,16 @@ public class PlayerDashManager : MonoBehaviour
     // No pog for you!
     public static Action<float> RecoverProg;
 
+    [SerializeField, Range(0, 20), Tooltip("How many times can the player dash until he needs to be grounded again")]
+    private int dashUses;
+
     [SerializeField, Range(0f, 1f), Tooltip("When does the player regenerate his dash")]
     private float recover;
 
     [SerializeField, Range(0f, 1f), Tooltip("How much can this script override the dashdirection if needed")]
     private float dashCorrect;
 
-    private bool canDash = true;
+    private int uses;
     private float counter;
     private PlayerMovement comp;
 
@@ -30,7 +33,7 @@ public class PlayerDashManager : MonoBehaviour
 
     private void Update()
     {
-        if (!canDash)
+        if (uses < dashUses)
         {
             // Not max dashes
             if (comp.isTouchingGround)  // Is touching ground
@@ -41,8 +44,8 @@ public class PlayerDashManager : MonoBehaviour
                 if (counter <= 0)       // Counted down
                 {
                     // Reenable dash
-                    canDash = true;
-                    UpdateDash?.Invoke(canDash);
+                    uses = dashUses;
+                    UpdateDash?.Invoke(uses);
                 }
 
                 RecoverProg?.Invoke(Mathf.Clamp01(counter / recover));
@@ -59,7 +62,7 @@ public class PlayerDashManager : MonoBehaviour
     public void Dash(Vector2 direction)
     {
         // Bypass if not ready to dash
-        if (!canDash) return;
+        if (uses == 0) return;
 
         direction.Normalize();
 
@@ -76,7 +79,7 @@ public class PlayerDashManager : MonoBehaviour
         // Execute dash
         comp.Dash(direction);
         counter = recover;
-        canDash = false;
-        UpdateDash?.Invoke(canDash);
+        uses--;
+        UpdateDash?.Invoke(uses);
     }
 }

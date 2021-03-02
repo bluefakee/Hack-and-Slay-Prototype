@@ -1258,11 +1258,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 7159213248076516550, guid: f4d15390a998d52409c60325c9af09b0,
-        type: 3}
-      propertyPath: ceilingRunDurr
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f4d15390a998d52409c60325c9af09b0, type: 3}
 --- !u!4 &1517986791413136174 stripped

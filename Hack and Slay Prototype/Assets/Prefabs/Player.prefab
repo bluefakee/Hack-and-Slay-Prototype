@@ -178,6 +178,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c7c71bb08bc54b44a45fe2a67faddb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dashUses: 3
   recover: 0.5
   dashCorrect: 0.15
 --- !u!114 &7159213248076516550
@@ -217,6 +218,7 @@ MonoBehaviour:
   maxSlideDrag: -6
   fallRecover: 65
   runUpSpeed: 8
+  ceilingRunDurr: 1
   wallJumpForce: 8
   wallJumpxForceMulti: 0.65
   wallJumpDurr: 0.2
